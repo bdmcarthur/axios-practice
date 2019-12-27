@@ -1,14 +1,59 @@
-const http = require("http");
+const axios = require("axios");
 
-const hostname = "127.0.0.1";
-const port = 3000;
+let getOriginalPokemon = () => {
+  axios
+    .get("https://pokeapi.co/api/v2/pokemon/?limit=151")
+    .then(function(response) {
+      // handle success
+      let pokemonNames = response.data.results.map(pokemon => {
+        return pokemon.name;
+      });
+      console.log(pokemonNames);
+    })
+    .catch(function(error) {
+      // handle error
+      console.log(error);
+    })
+    .finally(function() {
+      // always executed
+    });
+};
 
-const server = http.createServer((req, res) => {
-  res.statusCode = 200;
-  res.setHeader("Content-Type", "text/plain");
-  res.end("Hello World\n");
-});
+let getSpecificPokemon = pokemon => {
+  axios
+    .get(`https://pokeapi.co/api/v2/pokemon/${pokemon}/`)
+    .then(function(response) {
+      // handle success
+      // console.log(response);
+      console.log(
+        `You have chosen ${response.data.name}, #${response.data.order}!`
+      );
+    })
+    .catch(function(error) {
+      // handle error
+      console.log(error);
+    })
+    .finally(function() {
+      // always executed
+    });
+};
 
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
-});
+getOriginalPokemon();
+getSpecificPokemon("jigglypuff");
+
+////////////////////Multiple concurrent requests////////////////////////
+let getPikachu = () => {
+  return axios.get("https://pokeapi.co/api/v2/pokemon/pikachu/");
+};
+
+let getSquirtle = () => {
+  return axios.get("https://pokeapi.co/api/v2/pokemon/squirtle/");
+};
+
+axios.all([getPikachu(), getSquirtle()]).then(
+  axios.spread((pikachu, squirtle) => {
+    console.log(
+      `Best Friends, ${pikachu.data.name}, #${pikachu.data.order} and ${squirtle.data.name}, #${squirtle.data.order}!`
+    );
+  })
+);
